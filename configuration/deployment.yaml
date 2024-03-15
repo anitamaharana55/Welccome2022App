@@ -50,5 +50,4 @@ spec:
           periodSeconds: 10
           initialDelaySeconds: 60
       restartPolicy: Always
-      terminationGracePeriodSeconds: 30
----
+      terminationGracePeriodSeconds: 3
