@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels: #PODS
+    app: welcome-nodejs-app
+  name: welcome-nodejs-app
+  namespace: default
+spec:
+  ports:
+  - # nodePort: 30702 #CHANGE
+    port: 3001 #CHANGE
+    protocol: TCP
+    targetPort: 3001 #CHANGE
+  selector:
+    app: welcome-nodejs-app
+  sessionAffinity: None #CHANGE
+  type: LoadBalancer

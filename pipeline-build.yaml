@@ -1,0 +1,86 @@
+trigger:
+- master
+
+resources:
+- repo: self
+
+variables:
+  tag: $(tag) #'$(Build.BuildId)'
+
+stages:
+- task: DownloadSecureFile@1
+  name: publickey 
+  inputs:
+      secureFile: 'azure-rsa.pub'
+
+- task: TerraformCLI@2
+  inputs:
+    command: 'init'
+    workingDirectory: '$(System.DefaultWorkingDirectory)/modules'
+- task: TerraformCLI@2
+  inputs:
+    command: 'init'
+    workingDirectory: '$(System.DefaultWorkingDirectory)/modules'
+    commandOptions: '-var client_id=$(client_id) -var client_secret=$(client_secret) -var ssh_public_key=$(publickey.secureFilePath)'
+    backendType: 'azurerm'
+    backendServiceArm: 'azure-subscription-dev'
+    ensureBackend: true
+    backendAzureRmResourceGroupName: 'terraform-new-backend'
+    backendAzureRmResourceGroupLocation: 'East US'
+    backendAzureRmStorageAccountName: 'anitamaharana17567'
+    backendAzureRmContainerName: 'storageaccountanita'
+    backendAzureRmKey: 'kubernetes-dev.tfstate'
+
+- task: TerraformCLI@2
+  inputs:
+    command: 'apply'
+    workingDirectory: '$(System.DefaultWorkingDirectory)/modules'
+    environmentServiceName: 'azure-subscription-dev'
+    commandOptions: '-var client_id=$(client_id) -var client_secret=$(client_secret) -var ssh_public_key=$(publickey.secureFilePath)'
+
+- stage: Build
+  displayName: Build image
+  jobs:  
+  - job: Build
+    displayName: Build
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    - task: Docker@2
+      inputs:
+        containerRegistry: 'AnitaDockerHub' #serviceconnection
+        repository: 'anita/welcome-nodejs-app-devops' #containerRegistry
+        command: 'buildAndPush'
+        Dockerfile: '**/Dockerfile' #Docker file path
+        tags: '$(tag)'
+  - task: CopyFiles@2
+      inputs:
+        SourceFolder: '$(System.DefaultWorkingDirectory)'
+        Contents: '**/*.yaml'
+        TargetFolder: '$(Build.ArtifactStagingDirectory)'
+    - task: PublishBuildArtifacts@1
+      inputs:
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+        ArtifactName: 'manifests'
+        publishLocation: 'Container'
+- stage: Deploy
+  displayName: Deploy image
+  jobs:  
+  - job: Deploy
+    displayName: Deploy
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    - task: DownloadPipelineArtifact@2
+      inputs:
+        buildType: 'current'
+        artifactName: 'manifests'
+        itemPattern: '**/*.yaml'
+        targetPath: '$(System.ArtifactsDirectory)'
+    - task: KubernetesManifest@0
+      inputs:
+        action: 'deploy'
+        kubernetesServiceConnection: 'azure-kubernetes-service'
+        namespace: 'default'
+        manifests: '$(System.ArtifactsDirectory)/configuration/deployment.yaml'
+        containers: 'anita/welcome-nodejs-app-devops:$(tag)'
