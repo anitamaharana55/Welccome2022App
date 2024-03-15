@@ -25,7 +25,7 @@ stages:
     backendType: 'azurerm'
     backendServiceArm: 'azure-subscription-dev'
     ensureBackend: true
-    backendAzureRmResourceGroupName: 'terraform-new-backend'
+    backendAzureRmResourceGroupName: 'anitamaharana'
     backendAzureRmResourceGroupLocation: 'East US'
     backendAzureRmStorageAccountName: 'anitamaharana17567'
     backendAzureRmContainerName: 'storageaccountanita'
