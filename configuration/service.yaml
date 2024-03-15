@@ -8,9 +8,9 @@ metadata:
 spec:
   ports:
   - # nodePort: 30702 #CHANGE
-    port: 3001 #CHANGE
+    port: 8000 #CHANGE
     protocol: TCP
-    targetPort: 3001 #CHANGE
+    targetPort: 8000 #CHANGE
   selector:
     app: welcome-nodejs-app
   sessionAffinity: None #CHANGE

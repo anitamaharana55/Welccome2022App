@@ -23,11 +23,11 @@ spec:
     spec:
       containers:
       - name: welcome-nodejs-app
-        image: anitajinu/welcome-nodejs-app-devops:v1-release
+        image: anita/welcome-nodejs-app-devops:v1-release
         imagePullPolicy: IfNotPresent
         ports:
         - name: liveness-port
-          containerPort: 3001
+          containerPort: 8000
         resources: #CHANGE
           requests:
             cpu: 100m
